@@ -68,7 +68,7 @@ class DenounceWithAuth:
                     denounce = self.denounce_repo.save(denounce)
                     resp_body = {
                         "status": "OK",
-                        "denounce_id": str(user_id_param['user_id'])
+                        "denounce_id": str(denounce.id)
                     }
                     resp.body = json.dumps(resp_body, ensure_ascii=False)
                 else:

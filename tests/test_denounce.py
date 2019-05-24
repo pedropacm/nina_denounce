@@ -61,7 +61,7 @@ def test_complete_denounce_success(client):
         "denounce_id": "1",
         "description": "Homem gritou comigo no onibus."
     }
-    token = encode_rs512({'user_id': 1})
+    token = encode_rs512({'user_id': 3})
     response = client.simulate_put(
         '/api/v1/denounce/complete',
         body = json.dumps(denounce_payload, ensure_ascii=False),
@@ -81,7 +81,7 @@ def test_complete_denounce_success(client):
     denounce_repo = DenounceRepo()
     saved_denounce = denounce_repo.find_by_id(1)
 
-    assert saved_denounce.user_id == 1
+    assert saved_denounce.user_id == 3
     assert saved_denounce.description == denounce_payload['description']
 
 def test_complete_denounce_bad_header(client):
