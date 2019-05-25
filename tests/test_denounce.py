@@ -61,7 +61,7 @@ def test_complete_denounce_success(client):
         "denounce_id": "1",
         "description": "Homem gritou comigo no onibus."
     }
-    token = encode_rs512({'user_id': 3})
+    token = encode_rs512({'user_id': 1})
     response = client.simulate_put(
         '/api/v1/denounce/complete',
         body = json.dumps(denounce_payload, ensure_ascii=False),
@@ -81,7 +81,7 @@ def test_complete_denounce_success(client):
     denounce_repo = DenounceRepo()
     saved_denounce = denounce_repo.find_by_id(1)
 
-    assert saved_denounce.user_id == 3
+    assert saved_denounce.user_id == 1
     assert saved_denounce.description == denounce_payload['description']
 
 def test_complete_denounce_bad_header(client):
@@ -103,4 +103,29 @@ def test_complete_denounce_bad_header(client):
         "status": "Bad Request"
     }
     assert response.status == falcon.HTTP_BAD_REQUEST
+    assert response.json == expected_response_body
+
+def test_get_denounces_success(client):
+    response = client.simulate_get(
+        '/api/v1/denounce/create',
+        headers={
+            'content-type': falcon.MEDIA_JSON,
+            'accept': falcon.MEDIA_JSON
+            }
+    )
+
+    expected_response_body = {
+        "status": "OK",
+        "denounces": [
+            {
+                "denounce_id": "12345",
+                "user_id": "12345",
+                "name": "Test User",
+                "bus_number": "12345",
+                "lat": "3.7255483",
+                "lon": "-38.5280283"
+            }
+        ]
+    }
+    assert response.status == falcon.HTTP_OK
     assert response.json == expected_response_body

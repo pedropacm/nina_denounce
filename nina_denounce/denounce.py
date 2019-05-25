@@ -2,6 +2,9 @@ import json
 import ast
 from util.crypto import decode_rs512
 
+import grpc
+import rpc.user_service_pb2_grpc as user_service_pb2_grpc
+import rpc.user_service_pb2 as user_service_pb2
 import falcon
 from nina_denounce.repo.denounce_repo import DenounceRepo, Denounce
 
@@ -14,7 +17,6 @@ class DenounceApi:
         try:
             denounce_payload = json.load(req.bounded_stream)
             if(self.validate_denounce_payload(denounce_payload)):
-                print denounce_payload
                 new_denounce = Denounce()
                 new_denounce.lat = denounce_payload['lat']
                 new_denounce.lon = denounce_payload['lon']
@@ -40,21 +42,42 @@ class DenounceApi:
         else:
             raise falcon.HTTPBadRequest()
 
-def extract_user_id(req, resp, resource, params):
-    token = remove_token_prefix(req.get_header('Authorization'), 'Bearer ')
-    params['user_id'] = decode_rs512(token)    
+    def on_get(self, req, resp):
+        try:
+            denounces = self.denounce_repo.list_all()
+            resp_body = {
+                "status": "OK",
+                "denounces": []
+            }
+            channel = grpc.insecure_channel('localhost:50051')
+            stub = user_service_pb2_grpc.UserServiceStub(channel)
+            for denounce in denounces:
+                user_name = stub.GetName(user_service_pb2.UserId(id=denounce.user_id))
+                resp_body["denounces"].insert(0,
+                    {
+                        "denounce_id": str(denounce.id),
+                        "user_id": str(denounce.user_id),
+                        "name": user_name.name.encode('utf-8'),
+                        "bus_number": str(denounce.bus_number),
+                        "lat": str(denounce.lat),
+                        "lon": str(denounce.lon)
+                    }
+                )
+            resp.body = json.dumps(resp_body, ensure_ascii=False)
+        except:
+            error_msg = {
+                "status": "Bad Request"
+            }
+            resp.body = json.dumps(error_msg, ensure_ascii=False)
+            resp.status = falcon.HTTP_BAD_REQUEST
 
 
-#@falcon.before(extract_user_id)
 class DenounceWithAuth:
 
     def __init__(self, denounce_repo):
         self.denounce_repo = denounce_repo
 
-
     def on_put(self, req, resp):
-        #import ipdb
-        #ipdb.set_trace(context=21)
         try:
             token = self.remove_token_prefix(req.get_header('Authorization'), 'Bearer ')
             user_id_param = ast.literal_eval(decode_rs512(token))

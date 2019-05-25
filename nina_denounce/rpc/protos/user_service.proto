@@ -1,0 +1,15 @@
+syntax="proto3";
+
+service UserService {
+   
+	rpc GetName(UserId) returns (UserName) {}
+
+}
+
+message UserId {
+	uint32 id = 1;
+}
+
+message UserName {
+	string name = 1;
+}

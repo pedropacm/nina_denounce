@@ -32,6 +32,9 @@ class DenounceRepo:
 	def find_by_id(self, denounce_id):
 		return session.query(Denounce).filter(Denounce.id == denounce_id).first()
 
+	def list_all(self):
+		return session.query(Denounce).all()
+
 class Denounce(Base):
 	__tablename__ = 'denounce'
 	id = Column(Integer, primary_key=True)
