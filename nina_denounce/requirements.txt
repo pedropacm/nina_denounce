@@ -15,7 +15,7 @@ httpie==1.0.2
 idna==2.8
 ipaddress==1.0.22
 ipdb==0.12
-ipython==5.8.0
+ipython==7.16.3
 ipython-genutils==0.2.0
 mock==3.0.5
 more-itertools==5.0.0
